@@ -1,0 +1,77 @@
+# ─── .NET / ASP.NET Core ──────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+# User secrets (érzékeny adatok!)
+**/appsettings.Development.json
+**/secrets.json
+
+# ─── Node.js / React / Vite ────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ─── Környezeti változók (sosem kerülnek Git-be!) ──────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ─── Operációs rendszer ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE-k ────────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+.vscode/settings.json
+
+# ─── Naplófájlok ──────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ─── PostgreSQL ───────────────────────────────────────────────────────────
+*.pgdump
+
+# ═══ Codespaces-előkészítés: kiegészítések ═══════════════════════════════════
+
+# ─── Titkok, jelszavak, környezeti változók ────────────────────────────────
+# Általános .env minta (a .env.example sablon viszont verziókezelhető)
+.env.*
+!.env.example
+.devcontainer/.env
+# .NET User Secrets (alapból a felhasználói profilban van, a repón kívül;
+# ez csak véletlen bemásolás ellen véd)
+**/UserSecrets/
+**/usersecrets/
+.microsoft/
+# Tanúsítványok, kulcsok
+*.pfx
+*.p12
+*.pem
+*.key
+*.snk
+
+# ─── Adatbázis-mentések és helyi adatfájlok ────────────────────────────────
+*.dump
+*.backup
+*.bak
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+postgres-data/
+
+# ─── Generált és ideiglenes fájlok ─────────────────────────────────────────
+TestResults/
+coverage/
+*.tsbuildinfo
+.eslintcache
+

@@ -1,0 +1,19 @@
+# .gitattributes
+# Egységes sorvégek (LF) Windows és Linux (Codespaces) között.
+# Különösen fontos a shell-scripteknél: a CRLF sorvég Linuxon hibát okoz.
+
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+
+# Bináris fájlok: Git ne módosítsa a tartalmukat
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+

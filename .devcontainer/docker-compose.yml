@@ -1,0 +1,46 @@
+# .devcontainer/docker-compose.yml
+# A Codespaces fejlesztői környezet két konténere:
+#   app – a fejlesztői konténer (.NET 10 SDK + Node.js), ebben fut a backend és a frontend
+#   db  – PostgreSQL 18 adatbázis
+#
+# A két konténer ugyanazon a hálózaton osztozik (network_mode: service:db),
+# ezért az alkalmazás az adatbázist a 127.0.0.1:5432 címen éri el.
+# Az 5432-es port NINCS kiforgatva (nincs "ports:" bejegyzés), így az
+# adatbázis kívülről nem érhető el, csak a fejlesztői konténerből.
+#
+# JELSZÓ: nincs a fájlban. Az ARM_DB_PASSWORD értéket a GitHub Codespaces-titokból
+# (Settings → Codespaces → Secrets) olvassa be. Ha nincs beállítva, az indítás
+# hibával leáll (a ":?" miatt), nem indul üres jelszóval.
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/dotnet:10.0
+    volumes:
+      # A repó szülőmappája: így a /workspaces/<repó-neve> mappába kerül a kód.
+      - ../..:/workspaces:cached
+    # A konténer ne lépjen ki, a VS Code ebbe csatlakozik.
+    command: sleep infinity
+    # Közös hálózat az adatbázissal: az adatbázis "localhost"-on elérhető.
+    network_mode: service:db
+    environment:
+      ARM_DB_PASSWORD: ${ARM_DB_PASSWORD:?Állítsd be az ARM_DB_PASSWORD Codespaces-titkot (GitHub -> Settings -> Codespaces -> Secrets)}
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    volumes:
+      # PostgreSQL 18-tól az adatkönyvtár (PGDATA) verziófüggő, alapértelmezetten
+      # /var/lib/postgresql/18/docker, és az image VOLUME-ja a szülőmappa:
+      # /var/lib/postgresql. Ezért ide csatlakoztatjuk a kötetet, NEM a régi
+      # /var/lib/postgresql/data útvonalra. Így az adatok a Codespace leállítása
+      # és újraindítása után is megmaradnak (a Codespace törlésekor viszont törlődnek).
+      - postgres-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: arm_app
+      POSTGRES_DB: automotive_risk_manager
+      # A jelszó csak az ELSŐ indításkor (üres kötet esetén) kerül az adatbázisba.
+      POSTGRES_PASSWORD: ${ARM_DB_PASSWORD:?Állítsd be az ARM_DB_PASSWORD Codespaces-titkot (GitHub -> Settings -> Codespaces -> Secrets)}
+
+volumes:
+  postgres-data:
+

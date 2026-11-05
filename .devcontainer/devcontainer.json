@@ -1,0 +1,56 @@
+// .devcontainer/devcontainer.json
+// Az Automotive Risk Manager GitHub Codespaces fejlesztői környezete.
+// (A fájl JSONC: megjegyzések engedélyezettek.)
+{
+  "name": "Automotive Risk Manager",
+
+  // Docker Compose alapú környezet: app (.NET + Node) + db (PostgreSQL 18)
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "shutdownAction": "stopCompose",
+
+  "features": {
+    // Node.js LTS a React + Vite frontendhez
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+
+  // A Codespaces bekéri ezt a titkot a létrehozáskor.
+  // Az értéket sosem a repóba, hanem a GitHub Codespaces-titkok közé kell írni.
+  "secrets": {
+    "ARM_DB_PASSWORD": {
+      "description": "A Codespaces-ben futó PostgreSQL arm_app felhasználójának jelszava. Csak erre a környezetre használt, új jelszó legyen (min. 12 karakter: betűk, számok, . _ ~ -).",
+      "documentationUrl": "https://docs.github.com/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces"
+    }
+  },
+
+  // Fejlesztői környezet (a User Secrets és a migrációk is ezt használják)
+  "remoteEnv": {
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "DOTNET_ENVIRONMENT": "Development"
+  },
+
+  // Első létrehozás után lefut: eszközök, csomagok, adatbázis-kapcsolat (titokból).
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Továbbított portok: 5173 = frontend (Vite), 5000 = backend API.
+  // FIGYELEM: a port-láthatóságot (Private/Public) a devcontainer.json nem tudja
+  // beállítani. A Codespaces alapértelmezése a Private. A Ports fülön SOHA ne
+  // állítsd Public-ra: az API-nak még nincs hitelesítése.
+  "forwardPorts": [5173, 5000],
+  "portsAttributes": {
+    "5173": { "label": "Frontend (Vite)", "onAutoForward": "notify" },
+    "5000": { "label": "Backend API", "onAutoForward": "silent" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp"
+      ]
+    }
+  }
+}
+
