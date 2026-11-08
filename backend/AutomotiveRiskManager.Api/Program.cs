@@ -35,7 +35,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // MVC kontrollerek. Az AutoValidateAntiforgeryToken szűrő minden állapotmódosító
 // kérésnél (POST, PUT, PATCH, DELETE) megköveteli a CSRF-tokent; a GET kérések szabadok.
-builder.Services.AddControllers(options =>
+builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 });
@@ -175,6 +175,7 @@ builder.Services.AddCors(options =>
 // ─── Alkalmazás felépítése ───────────────────────────────────────────────────
 
 var app = builder.Build();
+app.UseForwardedHeaders(new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions { ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto, KnownProxies = { System.Net.IPAddress.Loopback, System.Net.IPAddress.IPv6Loopback } });
 
 // Fejlesztői módban automatikus migráció és kezdeti adatok (szerepkörök, első Administrator).
 // A MigrateAsync csak a függőben lévő migrációkat futtatja – nem töröl adatot!
