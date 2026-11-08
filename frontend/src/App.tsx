@@ -12,6 +12,7 @@ import StatusBadge from './components/StatusBadge'
 import Navigation from './components/layout/Navigation'
 import type { Page } from './components/layout/Navigation'
 import SupplierList from './components/suppliers/SupplierList'
+import RiskList from './components/risks/RiskList'
 import LoginPage from './components/auth/LoginPage'
 import AccessDenied from './components/auth/AccessDenied'
 import UserManagement from './components/users/UserManagement'
@@ -91,7 +92,7 @@ export default function App() {
             <button className="btn btn-sm btn-logout" onClick={handleLogout}>
               Kijelentkezés
             </button>
-            <div className="header-badge">v0.3.0 – Fejlesztői verzió</div>
+            <div className="header-badge">v0.4.0 – Fejlesztői verzió</div>
           </div>
         </div>
       </header>
@@ -139,10 +140,10 @@ export default function App() {
               <h3>Modulok állapota</h3>
               <div className="features-grid">
                 {[
-                  { icon: '👤', title: 'Felhasználókezelés',    desc: 'Bejelentkezés, szerepkörök',              status: 'Tesztelés alatt' },
+                  { icon: '👤', title: 'Felhasználókezelés',    desc: 'Bejelentkezés, szerepkörök',              status: 'Elkészült ✅' },
                   { icon: '🏭', title: 'Beszállítókezelés',     desc: 'Beszállítók nyilvántartása',              status: 'Elkészült ✅' },
-                  { icon: '⚠️', title: 'Kockázatkezelés',      desc: 'Kockázatok rögzítése és felülvizsgálata', status: 'Tervezett' },
-                  { icon: '📊', title: 'Kockázatértékelés',     desc: 'Valószínűség × Hatás pontszám',           status: 'Tervezett' },
+                  { icon: '⚠️', title: 'Kockázatkezelés',      desc: 'Kockázatok rögzítése és felülvizsgálata', status: 'Elkészült ✅' },
+                  { icon: '📊', title: 'Kockázatértékelés',     desc: 'Valószínűség × Hatás pontszám',           status: 'Elkészült ✅' },
                   { icon: '🔧', title: 'Kezelési intézkedések', desc: 'Feladatok és felelősök',                  status: 'Tervezett' },
                   { icon: '📈', title: 'Dashboard',             desc: 'Összesített mutatók, auditnapló',         status: 'Tervezett' },
                 ].map(feature => (
@@ -162,6 +163,9 @@ export default function App() {
 
         {/* Beszállítók oldal (minden bejelentkezett szerepkör látja; a módosító gombok jogosultságfüggők) */}
         {currentPage === 'suppliers' && <SupplierList />}
+
+        {/* Kockázatok oldal (minden bejelentkezett szerepkör látja; a módosítás csak Administrator/RiskManager) */}
+        {currentPage === 'risks' && <RiskList />}
 
         {/* Felhasználók oldal: csak Administrator; másoknak hibaoldal (a szerver is 403-at ad) */}
         {currentPage === 'users' && (

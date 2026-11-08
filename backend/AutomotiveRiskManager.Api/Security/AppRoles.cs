@@ -25,6 +25,12 @@ public static class AppPolicies
     /// <summary>Beszállítók létrehozása, módosítása, inaktiválása: Administrator, RiskManager.</summary>
     public const string ManageSuppliers = "ManageSuppliers";
 
+    /// <summary>Kockázatok megtekintése: minden bejelentkezett szerepkör (Administrator, RiskManager, Viewer).</summary>
+    public const string ViewRisks = "ViewRisks";
+
+    /// <summary>Kockázatok létrehozása, módosítása, értékelése és státuszváltása: Administrator, RiskManager.</summary>
+    public const string ManageRisks = "ManageRisks";
+
     /// <summary>Felhasználók és szerepkörök kezelése: csak Administrator.</summary>
     public const string ManageUsers = "ManageUsers";
 }

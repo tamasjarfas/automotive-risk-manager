@@ -154,6 +154,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AppPolicies.ManageSuppliers, policy =>
         policy.RequireRole(AppRoles.Administrator, AppRoles.RiskManager));
 
+    options.AddPolicy(AppPolicies.ViewRisks, policy =>
+        policy.RequireRole(AppRoles.Administrator, AppRoles.RiskManager, AppRoles.Viewer));
+
+    options.AddPolicy(AppPolicies.ManageRisks, policy =>
+        policy.RequireRole(AppRoles.Administrator, AppRoles.RiskManager));
+
     options.AddPolicy(AppPolicies.ManageUsers, policy =>
         policy.RequireRole(AppRoles.Administrator));
 });

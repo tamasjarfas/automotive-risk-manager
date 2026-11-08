@@ -165,6 +165,8 @@ Kizárólag oktatási célra készült. Nyilvános terjesztésre nem alkalmas.
 |---|:-:|:-:|:-:|
 | Beszállítók megtekintése | ✅ | ✅ | ✅ |
 | Beszállítók létrehozása, módosítása, inaktiválása | ✅ | ✅ | ❌ (403) |
+| Kockázatok megtekintése és szűrése | ✅ | ✅ | ✅ |
+| Kockázatok létrehozása, szerkesztése, értékelése, státuszváltása | ✅ | ✅ | ❌ (403) |
 | Felhasználók és szerepkörök kezelése | ✅ | ❌ (403) | ❌ (403) |
 
 A jogosultságokat a **szerver** ellenőrzi; a felületen elrejtett gombok csak kényelmi funkciók.
@@ -181,3 +183,19 @@ A jelszó nincs a forráskódban, a repóban és a naplóban. A részletes lép�
 A migrációt `dotnet ef migrations add AddIdentity` paranccsal kell létrehozni (Codespaces).
 Új táblák: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `role_claims`, `user_tokens`.
 A `suppliers` tábla és adatai nem változnak.
+
+---
+
+## ⚠️ 4. fejlesztési szakasz – Beszállítói kockázatértékelési modul
+
+**Cél:** Beszállítókhoz rendelt információbiztonsági kockázatok nyilvántartása és 5×5-ös kockázati mátrix alapú automatikus értékelése.
+
+| Elem | Megvalósítás |
+|---|---|
+| Adatbázis-tábla | `risks` (idegen kulcs: `SupplierId` → `suppliers.Id`, `DeleteBehavior.Restrict`) |
+| Kockázatszámítás | `Score = Probability (1–5) × Impact (1–5)` → `1..25` (kizárólag szerveroldalon: `RiskCalculator`) |
+| Besorolási szintek | `1–4`: `Low` (Alacsony), `5–9`: `Medium` (Közepes), `10–16`: `High` (Magas), `17–25`: `Critical` (Kritikus) |
+| Életciklus-státuszok | `Open` (Nyitott), `UnderReview` (Felülvizsgálat alatt), `Mitigated` (Csökkentett / Kezelt), `Closed` (Lezárt / Archivált – fizikai törlés helyett) |
+| REST API végpontok | `GET /api/risks`, `GET /api/risks/{id}`, `POST /api/risks`, `PUT /api/risks/{id}`, `PATCH /api/risks/{id}/status` |
+| Egységtesztek | `backend/AutomotiveRiskManager.Tests/RiskCalculatorTests.cs` (xUnit határérték- és validációs tesztek) |
+| EF Core migráció | `dotnet ef migrations add AddRiskAssessments` (GitHub Codespacesben generálandó) |

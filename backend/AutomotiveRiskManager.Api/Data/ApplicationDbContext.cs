@@ -33,6 +33,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     /// <summary>A „suppliers" tábla – a Supplier entitások gyűjteménye.</summary>
     public DbSet<Supplier> Suppliers { get; set; }
 
+    /// <summary>A „risks" tábla – a beszállítói információbiztonsági kockázatok gyűjteménye.</summary>
+    public DbSet<Risk> Risks { get; set; }
+
     // ─── Modell konfiguráció ──────────────────────────────────────────────────
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -110,6 +113,54 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
                     UpdatedAt = null
                 }
             );
+        });
+
+        // ─── Kockázatok (risks tábla) ─────────────────────────────────────────────
+        modelBuilder.Entity<Risk>(entity =>
+        {
+            entity.ToTable("risks");
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.Title)
+                  .HasMaxLength(200)
+                  .IsRequired();
+
+            entity.Property(r => r.Description)
+                  .HasMaxLength(2000);
+
+            entity.Property(r => r.Category)
+                  .HasMaxLength(100)
+                  .IsRequired();
+
+            // A számított kockázati szint (Low, Medium, High, Critical) és a státusz
+            // (Open, UnderReview, Mitigated, Closed) olvasható stringként tárolódik.
+            entity.Property(r => r.Level)
+                  .HasConversion<string>()
+                  .HasMaxLength(20)
+                  .IsRequired();
+
+            entity.Property(r => r.Status)
+                  .HasConversion<string>()
+                  .HasMaxLength(30)
+                  .IsRequired();
+
+            entity.Property(r => r.CreatedAt)
+                  .HasColumnType("timestamp with time zone");
+
+            entity.Property(r => r.UpdatedAt)
+                  .HasColumnType("timestamp with time zone");
+
+            // Idegen kulcs a suppliers táblára.
+            // Restrict: olyan beszállító, amelyhez kockázat tartozik, nem törölhető fizikailag.
+            entity.HasOne(r => r.Supplier)
+                  .WithMany()
+                  .HasForeignKey(r => r.SupplierId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexek a gyors beszállítói és kockázatiszint-alapú szűréshez
+            entity.HasIndex(r => r.SupplierId).HasDatabaseName("ix_risks_supplier_id");
+            entity.HasIndex(r => r.Level).HasDatabaseName("ix_risks_level");
+            entity.HasIndex(r => r.Status).HasDatabaseName("ix_risks_status");
         });
     }
 }
