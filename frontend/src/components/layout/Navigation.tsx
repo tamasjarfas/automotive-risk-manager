@@ -1,24 +1,38 @@
 // components/layout/Navigation.tsx
-// Egyszerű navigációs sáv a főbb oldalak között.
+// Navigációs sáv. A menüpontok a felhasználó szerepköre szerint jelennek meg.
+// FIGYELEM: ez csak kényelmi funkció; a jogosultságot a szerver ellenőrzi.
 // React Router nélkül: az aktív oldalt prop-ként kapja, átváltáskor callback hívódik.
 
-type Page = 'dashboard' | 'suppliers'
+import { useAuth } from '../../context/AuthContext'
+
+export type Page = 'dashboard' | 'suppliers' | 'users'
 
 interface Props {
   currentPage: Page
   onNavigate: (page: Page) => void
 }
 
-const navItems: { id: Page; label: string; icon: string }[] = [
-  { id: 'dashboard',  label: 'Dashboard',    icon: '📊' },
-  { id: 'suppliers',  label: 'Beszállítók',  icon: '🏭' },
+interface NavItem {
+  id: Page
+  label: string
+  icon: string
+  adminOnly?: boolean
+}
+
+const navItems: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard',   icon: '📊' },
+  { id: 'suppliers', label: 'Beszállítók', icon: '🏭' },
+  { id: 'users',     label: 'Felhasználók', icon: '👤', adminOnly: true },
 ]
 
 export default function Navigation({ currentPage, onNavigate }: Props) {
+  const { canManageUsers } = useAuth()
+  const visibleItems = navItems.filter(item => !item.adminOnly || canManageUsers)
+
   return (
     <nav className="app-nav">
       <div className="nav-content">
-        {navItems.map(item => (
+        {visibleItems.map(item => (
           <button
             key={item.id}
             className={`nav-btn ${currentPage === item.id ? 'nav-btn-active' : ''}`}
@@ -33,4 +47,3 @@ export default function Navigation({ currentPage, onNavigate }: Props) {
     </nav>
   )
 }
-

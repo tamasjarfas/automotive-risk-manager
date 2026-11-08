@@ -143,3 +143,41 @@ A frontend elindul: **http://localhost:5173**
 
 Kizárólag oktatási célra készült. Nyilvános terjesztésre nem alkalmas.
 
+
+---
+
+## 🔐 3. fejlesztési szakasz – Hitelesítés és szerepkörök
+
+**Technológia:** ASP.NET Core Identity (PostgreSQL), cookie-alapú munkamenet, Antiforgery (CSRF).
+
+| Elem | Megoldás |
+|---|---|
+| Jelszótárolás | Identity jelszókivonat (nyílt szöveg sosem tárolódik) |
+| Jelszószabály | min. 12 karakter, kisbetű, nagybetű, számjegy |
+| Munkamenet | `__Host-ARM.Auth` cookie: HttpOnly, Secure, SameSite=Strict, 30 perc tétlenségi lejárat |
+| CSRF | `X-CSRF-TOKEN` fejléc minden POST/PUT/PATCH/DELETE kérésnél |
+| Zárolás | 5 sikertelen belépés után 15 perc |
+| Alapértelmezés | minden végpont hitelesítést igényel (kivétel: health, csrf, login, logout) |
+
+### Szerepkörök
+
+| Funkció | Administrator | RiskManager | Viewer |
+|---|:-:|:-:|:-:|
+| Beszállítók megtekintése | ✅ | ✅ | ✅ |
+| Beszállítók létrehozása, módosítása, inaktiválása | ✅ | ✅ | ❌ (403) |
+| Felhasználók és szerepkörök kezelése | ✅ | ❌ (403) | ❌ (403) |
+
+A jogosultságokat a **szerver** ellenőrzi; a felületen elrejtett gombok csak kényelmi funkciók.
+
+### Első Administrator
+
+Nincs nyilvános regisztráció. Az első Administrator a `SeedAdmin:UserName`, `SeedAdmin:Email` és
+`SeedAdmin:Password` konfigurációból jön létre induláskor (User Secrets vagy Codespaces-titok:
+`ARM_ADMIN_USERNAME`, `ARM_ADMIN_EMAIL`, `ARM_ADMIN_PASSWORD`), de **csak ha még nincs Administrator**.
+A jelszó nincs a forráskódban, a repóban és a naplóban. A részletes lépések a fejlesztői útmutatóban vannak.
+
+### Új EF Core migráció
+
+A migrációt `dotnet ef migrations add AddIdentity` paranccsal kell létrehozni (Codespaces).
+Új táblák: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `role_claims`, `user_tokens`.
+A `suppliers` tábla és adatai nem változnak.

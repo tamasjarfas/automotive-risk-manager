@@ -6,15 +6,17 @@
 //
 // Elérhető: GET /api/health
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutomotiveRiskManager.Api.Controllers;
 
 /// <summary>
 /// Az alkalmazás elérhetőségét ellenőrző végpont.
-/// Nem igényel hitelesítést – bárki lekérdezheti.
+/// Nem igényel hitelesítést – bárki lekérdezheti (a bejelentkezési oldal is használja).
 /// </summary>
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
 {

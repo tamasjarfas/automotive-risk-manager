@@ -10,12 +10,16 @@
 //      és beágyazza a kezdeti tesztadatokat (seed data).
 //   3. Tranzakciókezelés: az EF Core automatikusan kezeli a tranzakciókat.
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AutomotiveRiskManager.Api.Models;
 
 namespace AutomotiveRiskManager.Api.Data;
 
-public class ApplicationDbContext : DbContext
+// Az IdentityDbContext hozzáadja az Identity táblákat (felhasználók, szerepkörök, ...)
+// a meglévő Suppliers tábla mellé. A Suppliers leképezése és adatai változatlanok.
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {
     // A konstruktor a konfigurációt a dependency injection rendszerből kapja.
     // Ezt a Program.cs regisztrálja az IoC konténerbe.
@@ -34,6 +38,21 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // ─── Identity táblák: az egységes (snake_case) elnevezéshez igazítva ──────
+        // A "suppliers" táblához hasonlóan kisbetűs táblanevek; a Suppliers érintetlen.
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.ToTable("users");
+            entity.Property(u => u.DisplayName).HasMaxLength(150).IsRequired();
+            entity.Property(u => u.CreatedAt).HasColumnType("timestamp with time zone");
+        });
+        modelBuilder.Entity<ApplicationRole>().ToTable("roles");
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("user_roles");
+        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("user_claims");
+        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins");
+        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("role_claims");
+        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("user_tokens");
 
         modelBuilder.Entity<Supplier>(entity =>
         {

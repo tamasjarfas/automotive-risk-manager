@@ -1,22 +1,28 @@
 // App.tsx – a főkomponens, az alkalmazás „gyökere".
 //
 // Felelősségei:
-//   1. Navigációs állapot kezelése (melyik oldal van megnyitva)
-//   2. Fejléc és lábléc megjelenítése
-//   3. Az aktív oldal komponensének renderelése
+//   1. Hitelesítési állapot: nincs bejelentkezés → bejelentkezési oldal
+//   2. Navigációs állapot kezelése (melyik oldal van megnyitva)
+//   3. Fejléc (bejelentkezett felhasználó, kijelentkezés) és lábléc megjelenítése
+//   4. Az aktív oldal komponensének renderelése (jogosultságtól függően)
 
 import { useState, useEffect } from 'react'
 import { fetchHealthStatus, HealthResponse } from './services/healthService'
 import StatusBadge from './components/StatusBadge'
 import Navigation from './components/layout/Navigation'
+import type { Page } from './components/layout/Navigation'
 import SupplierList from './components/suppliers/SupplierList'
-
-type Page = 'dashboard' | 'suppliers'
+import LoginPage from './components/auth/LoginPage'
+import AccessDenied from './components/auth/AccessDenied'
+import UserManagement from './components/users/UserManagement'
+import { useAuth } from './context/AuthContext'
+import { ROLE_LABELS } from './types/auth'
 
 export default function App() {
+  const { user, loading: authLoading, logout, canManageUsers } = useAuth()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
 
-  // Backend kapcsolat állapota (dashboard-on jelenik meg)
+  // Backend kapcsolat állapota (dashboard-on jelenik meg; a /api/health nyilvános)
   const [health, setHealth]   = useState<HealthResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
@@ -41,6 +47,28 @@ export default function App() {
     checkHealth()
   }, [])
 
+  async function handleLogout() {
+    await logout()
+    setCurrentPage('dashboard')   // újabb bejelentkezésnél ne a korábbi (esetleg tiltott) oldal nyíljon meg
+  }
+
+  // A munkamenet ellenőrzése közben (oldalbetöltéskor) rövid várakozó képernyő
+  if (authLoading) {
+    return (
+      <div className="login-page">
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <span>Munkamenet ellenőrzése...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Nincs bejelentkezve: csak a bejelentkezési oldal érhető el
+  if (!user) {
+    return <LoginPage />
+  }
+
   return (
     <div className="app">
       {/* ── Fejléc ── */}
@@ -53,7 +81,18 @@ export default function App() {
               <p>Információbiztonsági kockázatkezelő rendszer</p>
             </div>
           </div>
-          <div className="header-badge">v0.2.0 – Fejlesztői verzió</div>
+          <div className="header-right">
+            <div className="header-user">
+              <span className="header-user-name">{user.displayName}</span>
+              <span className="header-user-role">
+                {user.roles.map(r => ROLE_LABELS[r] ?? r).join(', ')}
+              </span>
+            </div>
+            <button className="btn btn-sm btn-logout" onClick={handleLogout}>
+              Kijelentkezés
+            </button>
+            <div className="header-badge">v0.3.0 – Fejlesztői verzió</div>
+          </div>
         </div>
       </header>
 
@@ -67,7 +106,7 @@ export default function App() {
         {currentPage === 'dashboard' && (
           <>
             <section className="hero">
-              <h2>Üdvözöljük a rendszerben</h2>
+              <h2>Üdvözöljük a rendszerben, {user.displayName}!</h2>
               <p>
                 Ez az alkalmazás egy fiktív autóipari alkatrészgyártó vállalat
                 beszállítói információbiztonsági kockázatkezelését támogatja.
@@ -100,7 +139,7 @@ export default function App() {
               <h3>Modulok állapota</h3>
               <div className="features-grid">
                 {[
-                  { icon: '👤', title: 'Felhasználókezelés',    desc: 'Bejelentkezés, szerepkörök',              status: 'Tervezett' },
+                  { icon: '👤', title: 'Felhasználókezelés',    desc: 'Bejelentkezés, szerepkörök',              status: 'Tesztelés alatt' },
                   { icon: '🏭', title: 'Beszállítókezelés',     desc: 'Beszállítók nyilvántartása',              status: 'Elkészült ✅' },
                   { icon: '⚠️', title: 'Kockázatkezelés',      desc: 'Kockázatok rögzítése és felülvizsgálata', status: 'Tervezett' },
                   { icon: '📊', title: 'Kockázatértékelés',     desc: 'Valószínűség × Hatás pontszám',           status: 'Tervezett' },
@@ -121,8 +160,15 @@ export default function App() {
           </>
         )}
 
-        {/* Beszállítók oldal */}
+        {/* Beszállítók oldal (minden bejelentkezett szerepkör látja; a módosító gombok jogosultságfüggők) */}
         {currentPage === 'suppliers' && <SupplierList />}
+
+        {/* Felhasználók oldal: csak Administrator; másoknak hibaoldal (a szerver is 403-at ad) */}
+        {currentPage === 'users' && (
+          canManageUsers
+            ? <UserManagement />
+            : <AccessDenied onBack={() => setCurrentPage('dashboard')} />
+        )}
 
       </main>
 
@@ -137,4 +183,3 @@ export default function App() {
     </div>
   )
 }
-

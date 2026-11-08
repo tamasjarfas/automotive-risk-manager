@@ -287,3 +287,418 @@ body {
   font-size: 0.8rem;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2–3. fejlesztési szakasz kiegészítései
+   Navigáció, gombok, táblázat, űrlapok, modális ablak, értesítések,
+   bejelentkezési oldal, felhasználókezelés. Ugyanazt a kék-fehér palettát
+   (a :root CSS-változókat) használja, mint a kezdőoldal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Navigációs sáv ──────────────────────────────────────────────────── */
+.app-nav {
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 0 2rem;
+}
+
+.nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.1rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.nav-btn:hover { color: var(--color-primary); background: var(--color-bg); }
+
+.nav-btn-active {
+  color: var(--color-primary-light);
+  border-bottom-color: var(--color-primary-light);
+}
+
+/* ─── Fejléc: bejelentkezett felhasználó ──────────────────────────────── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.header-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+
+.header-user-name { font-weight: 600; font-size: 0.9rem; }
+.header-user-role { font-size: 0.75rem; opacity: 0.75; }
+
+.btn-logout {
+  background: rgba(255,255,255,0.12);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+/* ─── Gombok ──────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.15rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-light); }
+
+.btn-secondary { background: white; color: var(--color-secondary); border-color: var(--color-border); }
+.btn-secondary:hover:not(:disabled) { background: var(--color-bg); }
+
+.btn-warning { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
+.btn-warning:hover:not(:disabled) { background: #fef3c7; }
+
+.btn-success { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+.btn-success:hover:not(:disabled) { background: #dcfce7; }
+
+/* ─── Oldal fejléc, lista oldalak ─────────────────────────────────────── */
+.supplier-list-page { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-title { font-size: 1.35rem; font-weight: 600; color: var(--color-primary); }
+.page-subtitle { font-size: 0.85rem; color: var(--color-text-muted); }
+
+/* ─── Értesítések ─────────────────────────────────────────────────────── */
+.notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid;
+  font-size: 0.9rem;
+}
+.notification-success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.notification-error   { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+
+.notification-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+.notification-close:hover { opacity: 1; }
+
+/* ─── Betöltés, hiba, üres állapot ────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--color-text-muted);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary-light);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-state {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.empty-state {
+  background: var(--color-bg-card);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.empty-icon { font-size: 2.5rem; }
+
+/* ─── Táblázat ────────────────────────────────────────────────────────── */
+.table-wrapper {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.supplier-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+
+.supplier-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg);
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.supplier-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.supplier-table tr:last-child td { border-bottom: none; }
+.supplier-table tbody tr:hover { background: #f8fafc; }
+
+.row-inactive { opacity: 0.65; }
+
+.supplier-name { font-weight: 600; color: var(--color-text); }
+.supplier-desc-preview { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+
+.col-date { white-space: nowrap; color: var(--color-text-muted); font-size: 0.85rem; }
+.col-actions { text-align: right; white-space: nowrap; }
+.action-buttons { display: inline-flex; gap: 0.5rem; }
+
+/* ─── Állapotjelvény ──────────────────────────────────────────────────── */
+.supplier-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+.badge-active   { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.badge-inactive { background: #f1f5f9; border-color: var(--color-border); color: var(--color-text-muted); }
+
+.badge-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-active   { background: var(--color-success); }
+.dot-inactive { background: #94a3b8; }
+
+/* ─── Modális ablak és űrlapok ────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 39, 68, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.modal-box {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 540px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 1.5rem 1.75rem;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.modal-header h2 { font-size: 1.15rem; color: var(--color-primary); }
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.modal-close-btn:hover { color: var(--color-text); }
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; }
+
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--color-secondary); }
+.required-mark { color: var(--color-error); }
+.optional-mark { color: var(--color-text-muted); font-weight: 400; }
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-textarea { resize: vertical; }
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-input:disabled,
+.form-textarea:disabled { background: var(--color-bg); }
+
+.input-error { border-color: var(--color-error); }
+.field-error { color: var(--color-error); font-size: 0.8rem; margin-top: 0.25rem; }
+.char-count { font-size: 0.75rem; color: var(--color-text-muted); text-align: right; margin-top: 0.2rem; }
+
+.form-error-banner {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  border-radius: var(--radius);
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* ─── Kezdőlap: elkészült modul jelzése ───────────────────────────────── */
+.feature-status.status-done {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+/* ─── Bejelentkezési oldal ────────────────────────────────────────────── */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #0f2744 100%);
+}
+
+.login-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 2rem 1.5rem;
+}
+
+.login-logo { font-size: 2.75rem; text-align: center; line-height: 1; }
+.login-title { text-align: center; font-size: 1.4rem; color: var(--color-primary); margin-top: 0.5rem; }
+.login-subtitle { text-align: center; font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+.login-card .notification { margin-bottom: 1rem; }
+.login-submit { width: 100%; padding: 0.7rem 1rem; margin-top: 0.5rem; font-size: 0.95rem; }
+.login-note { font-size: 0.75rem; color: var(--color-text-muted); text-align: center; margin-top: 1.25rem; }
+
+/* ─── Jogosulatlan hozzáférés ─────────────────────────────────────────── */
+.access-denied {
+  background: var(--color-bg-card);
+  border: 1px solid #fca5a5;
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.access-denied-icon { font-size: 2.5rem; }
+.access-denied h2 { color: #991b1b; font-size: 1.2rem; }
+.access-denied p { color: var(--color-text-muted); max-width: 520px; }
+
+/* ─── Felhasználókezelés ──────────────────────────────────────────────── */
+.role-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: white;
+  color: var(--color-text);
+}
+.role-select:disabled { background: var(--color-bg); cursor: not-allowed; }
+
+.self-tag {
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.5rem;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  border-radius: 20px;
+  color: #1d4ed8;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.lock-tag { margin-left: 0.5rem; font-size: 0.75rem; color: var(--color-warning); white-space: nowrap; }
+
+/* ─── Reszponzív finomítások ──────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .header-content { flex-direction: column; align-items: flex-start; }
+  .header-right { justify-content: flex-start; }
+  .header-user { align-items: flex-start; }
+  .page-header { flex-direction: column; }
+  .app-nav { padding: 0 1rem; }
+  .app-main { padding: 1rem; }
+}

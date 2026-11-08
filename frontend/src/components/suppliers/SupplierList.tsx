@@ -9,6 +9,7 @@ import {
 } from '../../services/supplierService'
 import SupplierStatusBadge from './SupplierStatusBadge'
 import SupplierForm from './SupplierForm'
+import { useAuth } from '../../context/AuthContext'
 
 // Visszajelzési üzenet típusa
 interface Notification {
@@ -17,6 +18,10 @@ interface Notification {
 }
 
 export default function SupplierList() {
+  // Módosító gombok csak Administrator / RiskManager számára láthatók.
+  // (A szerver a Viewer módosítási kísérletét ettől függetlenül 403-mal elutasítja.)
+  const { canManageSuppliers } = useAuth()
+
   const [suppliers, setSuppliers]       = useState<Supplier[]>([])
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState<string | null>(null)
@@ -116,9 +121,11 @@ export default function SupplierList() {
             {loading ? 'Betöltés...' : `${suppliers.length} bejegyzés`}
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setEditTarget('new')}>
-          ➕ Új beszállító
-        </button>
+        {canManageSuppliers && (
+          <button className="btn btn-primary" onClick={() => setEditTarget('new')}>
+            ➕ Új beszállító
+          </button>
+        )}
       </div>
 
       {/* Értesítés (visszajelzés) */}
@@ -149,9 +156,11 @@ export default function SupplierList() {
         <div className="empty-state">
           <div className="empty-icon">🏭</div>
           <p>Még nincs rögzített beszállító.</p>
-          <button className="btn btn-primary" onClick={() => setEditTarget('new')}>
-            Első beszállító rögzítése
-          </button>
+          {canManageSuppliers && (
+            <button className="btn btn-primary" onClick={() => setEditTarget('new')}>
+              Első beszállító rögzítése
+            </button>
+          )}
         </div>
       )}
 
@@ -165,7 +174,7 @@ export default function SupplierList() {
                 <th>Tevékenységi kör</th>
                 <th>Állapot</th>
                 <th>Rögzítve</th>
-                <th className="col-actions">Műveletek</th>
+                {canManageSuppliers && <th className="col-actions">Műveletek</th>}
               </tr>
             </thead>
             <tbody>
@@ -184,6 +193,7 @@ export default function SupplierList() {
                   <td>{supplier.activity}</td>
                   <td><SupplierStatusBadge status={supplier.status} /></td>
                   <td className="col-date">{formatDate(supplier.createdAt)}</td>
+                  {canManageSuppliers && (
                   <td className="col-actions">
                     <div className="action-buttons">
                       <button
@@ -205,6 +215,7 @@ export default function SupplierList() {
                       </button>
                     </div>
                   </td>
+                  )}
                 </tr>
               ))}
             </tbody>

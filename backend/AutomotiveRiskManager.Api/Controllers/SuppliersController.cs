@@ -8,22 +8,25 @@
 //   PUT    /api/suppliers/{id}      – meglévő beszállító módosítása
 //   PATCH  /api/suppliers/{id}/status – állapot megváltoztatása
 //
-// FEJLESZTŐI MEGJEGYZÉS – BIZTONSÁG:
-//   Ez a vezérlő jelenleg hitelesítés nélkül érhető el.
-//   CSAK helyi fejlesztői környezetben szabad futtatni.
-//   A következő szakaszban ASP.NET Core Identity és JWT alapú
-//   hitelesítés + szerepkör-ellenőrzés kerül bevezetésre.
+// JOGOSULTSÁGOK (szerveroldalon ellenőrizve, lásd Program.cs szabályzatai):
+//   Megtekintés (GET)                 – Administrator, RiskManager, Viewer
+//   Létrehozás, módosítás, állapot    – Administrator, RiskManager
+//   Bejelentkezés nélkül: 401, jogosultság nélkül (pl. Viewer módosít): 403.
+//   Az állapotmódosító kérésekhez CSRF-token is kell (X-CSRF-TOKEN fejléc).
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutomotiveRiskManager.Api.Data;
 using AutomotiveRiskManager.Api.DTOs;
 using AutomotiveRiskManager.Api.Models;
+using AutomotiveRiskManager.Api.Security;
 
 namespace AutomotiveRiskManager.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = AppPolicies.ViewSuppliers)]   // alap: minden szerepkör megtekinthet
 public class SuppliersController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
@@ -70,6 +73,7 @@ public class SuppliersController : ControllerBase
     // ─── POST /api/suppliers ──────────────────────────────────────────────────
     /// <summary>Új beszállító rögzítése.</summary>
     [HttpPost]
+    [Authorize(Policy = AppPolicies.ManageSuppliers)]
     [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateSupplierRequest request)
@@ -114,6 +118,7 @@ public class SuppliersController : ControllerBase
     // ─── PUT /api/suppliers/{id} ──────────────────────────────────────────────
     /// <summary>Egy meglévő beszállító adatainak teljes frissítése.</summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AppPolicies.ManageSuppliers)]
     [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -155,6 +160,7 @@ public class SuppliersController : ControllerBase
     // ─── PATCH /api/suppliers/{id}/status ────────────────────────────────────
     /// <summary>Egy beszállító állapotának megváltoztatása (aktív ↔ inaktív).</summary>
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Policy = AppPolicies.ManageSuppliers)]
     [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
