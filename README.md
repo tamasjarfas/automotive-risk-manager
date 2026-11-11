@@ -218,3 +218,18 @@ A `suppliers` tábla és adatai nem változnak.
 | REST API végpontok | `GET /api/mitigations`, `GET /api/mitigations/{id}`, `GET /api/risks/{id}/mitigations`, `POST /api/mitigations`, `PUT /api/mitigations/{id}`, `PATCH /api/mitigations/{id}/status` |
 | Egységtesztek | `backend/AutomotiveRiskManager.Tests/MitigationPolicyTests.cs` (xUnit üzletiszabály-tesztek) |
 | EF Core migráció | `dotnet ef migrations add AddMitigationActions` (GitHub Codespacesben generálandó) |
+
+---
+
+## 📊 6. fejlesztési szakasz – Vezetői Dashboard modul
+
+**Cél:** Vezetői szintű, valós idejű információbiztonsági áttekintés a PostgreSQL adatbázis aktuális adataiból, szerveroldali EF Core (`AsNoTracking`) lekérdezésekkel.
+
+| Elem | Megvalósítás |
+|---|---|
+| REST API végpont | `GET /api/dashboard/summary` (`ViewDashboard` szabályzat: `Administrator`, `RiskManager`, `Viewer`) |
+| Vezetői KPI-kártyák (5 db) | Összes beszállító, Összes kockázat, Magas és kritikus kockázatok összevont száma, Nyitott intézkedések száma, Lejárt határidejű intézkedések száma |
+| Megoszlási diagramok (2 db) | Kockázatok megoszlása kockázati szint szerint (`Low`, `Medium`, `High`, `Critical`) + Intézkedések megoszlása végrehajtási állapot szerint (`Planned`, `InProgress`, `Completed`, `Cancelled`) |
+| Figyelmet igénylő tételek (Top 5) | Legmagasabb pontszámú nyitott kockázatok (max. 5), Lejárt határidejű intézkedések (max. 5), Közelgő határidők a következő 7 napon belül (max. 5) |
+| Egységtesztek | `backend/AutomotiveRiskManager.Tests/DashboardSummaryCalculatorTests.cs` (determinisztikus xUnit tesztek injektált UTC időponttal) |
+| Adatbázis-változás | Nem igényel új táblát vagy új EF Core migrációt (a meglévő `suppliers`, `risks`, `mitigation_actions` táblákat összegzi) |

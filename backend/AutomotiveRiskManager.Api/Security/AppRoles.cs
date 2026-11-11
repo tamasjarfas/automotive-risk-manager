@@ -19,6 +19,9 @@ public static class AppRoles
 /// </summary>
 public static class AppPolicies
 {
+    /// <summary>Vezetői Dashboard megtekintése: minden bejelentkezett szerepkör (Administrator, RiskManager, Viewer).</summary>
+    public const string ViewDashboard = "ViewDashboard";
+
     /// <summary>Beszállítók megtekintése: minden bejelentkezett szerepkör.</summary>
     public const string ViewSuppliers = "ViewSuppliers";
 

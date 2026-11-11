@@ -8,9 +8,9 @@
 
 import { useState, useEffect } from 'react'
 import { fetchHealthStatus, HealthResponse } from './services/healthService'
-import StatusBadge from './components/StatusBadge'
 import Navigation from './components/layout/Navigation'
 import type { Page } from './components/layout/Navigation'
+import DashboardPage from './components/dashboard/DashboardPage'
 import SupplierList from './components/suppliers/SupplierList'
 import RiskList from './components/risks/RiskList'
 import MitigationList from './components/mitigations/MitigationList'
@@ -94,7 +94,7 @@ export default function App() {
             <button className="btn btn-sm btn-logout" onClick={handleLogout}>
               Kijelentkezés
             </button>
-            <div className="header-badge">v0.5.0 – Fejlesztői verzió</div>
+            <div className="header-badge">v0.6.0 – Fejlesztői verzió</div>
           </div>
         </div>
       </header>
@@ -105,62 +105,28 @@ export default function App() {
       {/* ── Fő tartalom ── */}
       <main className="app-main">
 
-        {/* Dashboard oldal */}
+        {/* Vezetői Dashboard oldal (minden bejelentkezett szerepkör számára, csak olvasási nézet) */}
         {currentPage === 'dashboard' && (
-          <>
-            <section className="hero">
-              <h2>Üdvözöljük a rendszerben, {user.displayName}!</h2>
-              <p>
-                Ez az alkalmazás egy fiktív autóipari alkatrészgyártó vállalat
-                beszállítói információbiztonsági kockázatkezelését támogatja.
-                A rendszer BSc szakdolgozat keretében, oktatási célra készül.
-              </p>
-            </section>
-
-            <section className="status-section">
-              <h3>Rendszer állapot</h3>
-              <StatusBadge loading={loading} error={error} health={health} />
-              {!loading && (
-                <button
-                  className="retry-btn"
-                  onClick={() => {
-                    setLoading(true)
-                    setHealth(null)
-                    setError(null)
-                    fetchHealthStatus()
-                      .then(setHealth)
-                      .catch(err => setError(err instanceof Error ? err.message : 'Hiba'))
-                      .finally(() => setLoading(false))
-                  }}
-                >
-                  🔄 Újraellenőrzés
-                </button>
-              )}
-            </section>
-
-            <section className="features">
-              <h3>Modulok állapota</h3>
-              <div className="features-grid">
-                {[
-                  { icon: '👤', title: 'Felhasználókezelés',    desc: 'Bejelentkezés, szerepkörök',              status: 'Elkészült ✅' },
-                  { icon: '🏭', title: 'Beszállítókezelés',     desc: 'Beszállítók nyilvántartása',              status: 'Elkészült ✅' },
-                  { icon: '⚠️', title: 'Kockázatkezelés',      desc: 'Kockázatok rögzítése és felülvizsgálata', status: 'Elkészült ✅' },
-                  { icon: '📊', title: 'Kockázatértékelés',     desc: 'Valószínűség × Hatás pontszám',           status: 'Elkészült ✅' },
-                  { icon: '🔧', title: 'Kezelési intézkedések', desc: 'Feladatok és felelősök',                  status: 'Elkészült ✅' },
-                  { icon: '📈', title: 'Dashboard',             desc: 'Összesített mutatók, auditnapló',         status: 'Tervezett' },
-                ].map(feature => (
-                  <div key={feature.title} className="feature-card">
-                    <div className="feature-icon">{feature.icon}</div>
-                    <h4>{feature.title}</h4>
-                    <p>{feature.desc}</p>
-                    <span className={`feature-status ${feature.status.includes('✅') ? 'status-done' : ''}`}>
-                      {feature.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </>
+          <DashboardPage
+            userDisplayName={user.displayName}
+            health={health}
+            healthLoading={loading}
+            healthError={error}
+            onRetryHealth={() => {
+              setLoading(true)
+              setHealth(null)
+              setError(null)
+              fetchHealthStatus()
+                .then(setHealth)
+                .catch(err => setError(err instanceof Error ? err.message : 'Hiba'))
+                .finally(() => setLoading(false))
+            }}
+            onNavigate={setCurrentPage}
+            onOpenRiskMitigations={(riskId) => {
+              setSelectedRiskIdForMitigations(riskId)
+              setCurrentPage('mitigations')
+            }}
+          />
         )}
 
         {/* Beszállítók oldal (minden bejelentkezett szerepkör látja; a módosító gombok jogosultságfüggők) */}
