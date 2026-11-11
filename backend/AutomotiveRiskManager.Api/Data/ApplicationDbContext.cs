@@ -39,6 +39,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     /// <summary>A „mitigation_actions" tábla – a kockázatcsökkentő intézkedések gyűjteménye.</summary>
     public DbSet<MitigationAction> MitigationActions { get; set; }
 
+    /// <summary>Az „audit_logs" tábla – az üzleti események csak hozzáfűzhető (append-only) auditnaplója.</summary>
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
     // ─── Modell konfiguráció ──────────────────────────────────────────────────
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -222,6 +225,46 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasIndex(m => m.Status).HasDatabaseName("ix_mitigation_actions_status");
             entity.HasIndex(m => m.DueDate).HasDatabaseName("ix_mitigation_actions_due_date");
             entity.HasIndex(m => m.ResponsiblePerson).HasDatabaseName("ix_mitigation_actions_responsible");
+        });
+
+        // ─── Auditnapló (audit_logs tábla – append-only) ──────────────────────────
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("audit_logs");
+            entity.HasKey(a => a.Id);
+
+            entity.Property(a => a.TimestampUtc)
+                  .HasColumnType("timestamp with time zone")
+                  .IsRequired();
+
+            entity.Property(a => a.ActorUserName)
+                  .HasMaxLength(150)
+                  .IsRequired();
+
+            // A művelet (Action) és az érintett entitás típusa (EntityType) olvasható stringként tárolódik
+            entity.Property(a => a.Action)
+                  .HasConversion<string>()
+                  .HasMaxLength(40)
+                  .IsRequired();
+
+            entity.Property(a => a.EntityType)
+                  .HasConversion<string>()
+                  .HasMaxLength(40)
+                  .IsRequired();
+
+            entity.Property(a => a.Summary)
+                  .HasMaxLength(500)
+                  .IsRequired();
+
+            // A változások strukturált JSON-ként (PostgreSQL jsonb) tárolódnak
+            entity.Property(a => a.Changes)
+                  .HasColumnType("jsonb");
+
+            // Indexek a gyors időrendi, felhasználó-, entitás- és műveletalapú szűréshez
+            entity.HasIndex(a => a.TimestampUtc).HasDatabaseName("ix_audit_logs_timestamp_utc");
+            entity.HasIndex(a => a.ActorUserId).HasDatabaseName("ix_audit_logs_actor_user_id");
+            entity.HasIndex(a => new { a.EntityType, a.EntityId }).HasDatabaseName("ix_audit_logs_entity_type_entity_id");
+            entity.HasIndex(a => a.Action).HasDatabaseName("ix_audit_logs_action");
         });
     }
 }

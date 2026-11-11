@@ -23,6 +23,7 @@ using AutomotiveRiskManager.Api.Data;
 using AutomotiveRiskManager.Api.DTOs;
 using AutomotiveRiskManager.Api.Models;
 using AutomotiveRiskManager.Api.Security;
+using AutomotiveRiskManager.Api.Services;
 
 namespace AutomotiveRiskManager.Api.Controllers;
 
@@ -105,6 +106,8 @@ public class UsersController : ControllerBase
             CreatedAt = DateTimeOffset.UtcNow
         };
 
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
         var create = await _userManager.CreateAsync(user, request.Password);
         if (!create.Succeeded)
         {
@@ -118,9 +121,12 @@ public class UsersController : ControllerBase
         var addRole = await _userManager.AddToRoleAsync(user, role);
         if (!addRole.Succeeded)
         {
-            await _userManager.DeleteAsync(user);   // ne maradjon szerepkör nélküli fiók
             return BadRequest(new { message = "A szerepkör hozzárendelése sikertelen." });
         }
+
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserCreated(AuditActor.FromPrincipal(User), user, role));
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         _logger.LogInformation(
             "Felhasználó létrehozva: {UserName} ({Role}), létrehozta: {AdminId}",
@@ -151,6 +157,9 @@ public class UsersController : ControllerBase
         }
 
         var currentRoles = await _userManager.GetRolesAsync(user);
+        var previousRole = string.Join(", ", currentRoles);
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
 
         // Előbb az újat adjuk hozzá, csak utána vesszük el a régit: a felhasználó sosem marad szerepkör nélkül.
         if (!currentRoles.Contains(role))
@@ -175,6 +184,11 @@ public class UsersController : ControllerBase
         // A munkamenet jogosultságai azonnal frissüljenek
         await _userManager.UpdateSecurityStampAsync(user);
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserRoleChanged(
+            AuditActor.FromPrincipal(User), user, previousRole, role));
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
         _logger.LogInformation(
             "Szerepkör módosítva: {UserName} → {Role}, módosította: {AdminId}",
             user.UserName, role, CurrentUserId());
@@ -197,7 +211,12 @@ public class UsersController : ControllerBase
             return NotFound(new { message = "A felhasználó nem található." });
         }
 
-        user.IsActive = request.IsActive!.Value;
+        var previousIsActive = user.IsActive;
+        var newIsActive = request.IsActive!.Value;
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        user.IsActive = newIsActive;
         var update = await _userManager.UpdateAsync(user);
         if (!update.Succeeded)
         {
@@ -213,6 +232,11 @@ public class UsersController : ControllerBase
 
         // Inaktiváláskor a meglévő munkamenet azonnal érvénytelenné válik
         await _userManager.UpdateSecurityStampAsync(user);
+
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserStatusChanged(
+            AuditActor.FromPrincipal(User), user, previousIsActive, newIsActive));
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         _logger.LogInformation(
             "Felhasználó állapota módosítva: {UserName} → {Status}, módosította: {AdminId}",

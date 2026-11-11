@@ -42,5 +42,8 @@ public static class AppPolicies
 
     /// <summary>Felhasználók és szerepkörök kezelése: csak Administrator.</summary>
     public const string ManageUsers = "ManageUsers";
+
+    /// <summary>Auditnapló megtekintése: kizárólag Administrator.</summary>
+    public const string ViewAuditLogs = "ViewAuditLogs";
 }
 

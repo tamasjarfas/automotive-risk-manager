@@ -22,6 +22,7 @@ interface AuthContextValue {
   canManageRisks: boolean
   canManageMitigations: boolean
   canManageUsers: boolean
+  canViewAuditLogs: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -97,7 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     canManageSuppliers: hasRole('Administrator', 'RiskManager'),
     canManageRisks: hasRole('Administrator', 'RiskManager'),
     canManageMitigations: hasRole('Administrator', 'RiskManager'),
-    canManageUsers: hasRole('Administrator')
+    canManageUsers: hasRole('Administrator'),
+    canViewAuditLogs: hasRole('Administrator')
   }), [user, loading, sessionExpired, login, logout, hasRole])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

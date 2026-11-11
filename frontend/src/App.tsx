@@ -17,11 +17,12 @@ import MitigationList from './components/mitigations/MitigationList'
 import LoginPage from './components/auth/LoginPage'
 import AccessDenied from './components/auth/AccessDenied'
 import UserManagement from './components/users/UserManagement'
+import AuditLogList from './components/audit/AuditLogList'
 import { useAuth } from './context/AuthContext'
 import { ROLE_LABELS } from './types/auth'
 
 export default function App() {
-  const { user, loading: authLoading, logout, canManageUsers } = useAuth()
+  const { user, loading: authLoading, logout, canManageUsers, canViewAuditLogs } = useAuth()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [selectedRiskIdForMitigations, setSelectedRiskIdForMitigations] = useState<string | null>(null)
 
@@ -94,7 +95,7 @@ export default function App() {
             <button className="btn btn-sm btn-logout" onClick={handleLogout}>
               Kijelentkezés
             </button>
-            <div className="header-badge">v0.6.0 – Fejlesztői verzió</div>
+            <div className="header-badge">v0.7.0 – Fejlesztői verzió</div>
           </div>
         </div>
       </header>
@@ -154,6 +155,13 @@ export default function App() {
         {currentPage === 'users' && (
           canManageUsers
             ? <UserManagement />
+            : <AccessDenied onBack={() => setCurrentPage('dashboard')} />
+        )}
+
+        {/* Auditnapló oldal: csak Administrator; másoknak hibaoldal (a szerver is 403-at ad) */}
+        {currentPage === 'audit' && (
+          canViewAuditLogs
+            ? <AuditLogList />
             : <AccessDenied onBack={() => setCurrentPage('dashboard')} />
         )}
 

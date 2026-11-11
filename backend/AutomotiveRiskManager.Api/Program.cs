@@ -171,6 +171,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(AppPolicies.ManageUsers, policy =>
         policy.RequireRole(AppRoles.Administrator));
+
+    options.AddPolicy(AppPolicies.ViewAuditLogs, policy =>
+        policy.RequireRole(AppRoles.Administrator));
 });
 
 // ─── CORS ───────────────────────────────────────────────────────────────────

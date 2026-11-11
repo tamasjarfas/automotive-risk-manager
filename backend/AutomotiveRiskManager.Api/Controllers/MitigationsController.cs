@@ -238,6 +238,8 @@ public class MitigationsController : ControllerBase
         }
 
         _db.MitigationActions.Add(action);
+        _db.AuditLogs.Add(AuditLogBuilder.ForMitigationCreated(
+            AuditActor.FromPrincipal(User), action, risk.Title));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(
@@ -286,6 +288,20 @@ public class MitigationsController : ControllerBase
             });
         }
 
+        var before = new MitigationAction
+        {
+            Id                = action.Id,
+            RiskId            = action.RiskId,
+            Title             = action.Title,
+            Description       = action.Description,
+            ResponsiblePerson = action.ResponsiblePerson,
+            DueDate           = action.DueDate,
+            Priority          = action.Priority,
+            Status            = action.Status,
+            CompletedAt       = action.CompletedAt,
+            ResultNotes       = action.ResultNotes
+        };
+
         try
         {
             MitigationPolicy.UpdateAction(
@@ -305,6 +321,8 @@ public class MitigationsController : ControllerBase
             return BadRequest(new { Message = ex.Message });
         }
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForMitigationUpdated(
+            AuditActor.FromPrincipal(User), before, action));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(
@@ -342,7 +360,9 @@ public class MitigationsController : ControllerBase
             return NotFound(new { Message = $"A(z) {id} azonosítójú intézkedés nem található." });
         }
 
-        var previousStatus = action.Status;
+        var previousStatus      = action.Status;
+        var previousCompletedAt = action.CompletedAt;
+        var previousResultNotes = action.ResultNotes;
 
         try
         {
@@ -357,6 +377,12 @@ public class MitigationsController : ControllerBase
             return BadRequest(new { Message = ex.Message });
         }
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForMitigationStatusChanged(
+            AuditActor.FromPrincipal(User),
+            action,
+            previousStatus,
+            previousCompletedAt,
+            previousResultNotes));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(

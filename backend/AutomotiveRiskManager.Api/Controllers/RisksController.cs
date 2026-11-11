@@ -187,6 +187,7 @@ public class RisksController : ControllerBase
         };
 
         _db.Risks.Add(risk);
+        _db.AuditLogs.Add(AuditLogBuilder.ForRiskCreated(AuditActor.FromPrincipal(User), risk, supplier.Name));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(
@@ -245,6 +246,7 @@ public class RisksController : ControllerBase
         }
 
         // Ha a kérésben státusz is érkezett, ellenőrizzük
+        RiskStatus parsedStatus = risk.Status;
         if (!string.IsNullOrWhiteSpace(request.Status))
         {
             if (!Enum.TryParse<RiskStatus>(request.Status, ignoreCase: true, out var newStatus) ||
@@ -256,7 +258,7 @@ public class RisksController : ControllerBase
                 });
             }
 
-            risk.Status = newStatus;
+            parsedStatus = newStatus;
         }
 
         // Pontszám és kockázati szint kötelező szerveroldali újraszámítása
@@ -270,6 +272,20 @@ public class RisksController : ControllerBase
             return BadRequest(new { Message = ex.Message });
         }
 
+        var before = new Risk
+        {
+            Id          = risk.Id,
+            SupplierId  = risk.SupplierId,
+            Title       = risk.Title,
+            Description = risk.Description,
+            Category    = risk.Category,
+            Probability = risk.Probability,
+            Impact      = risk.Impact,
+            Score       = risk.Score,
+            Level       = risk.Level,
+            Status      = risk.Status
+        };
+
         risk.SupplierId  = supplier.Id;
         risk.Title       = request.Title.Trim();
         risk.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
@@ -278,8 +294,11 @@ public class RisksController : ControllerBase
         risk.Impact      = request.Impact;
         risk.Score       = evaluation.Score;
         risk.Level       = evaluation.Level;
+        risk.Status      = parsedStatus;
         risk.UpdatedAt   = DateTimeOffset.UtcNow;
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForRiskUpdated(
+            AuditActor.FromPrincipal(User), before, risk, supplier.Name));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(
@@ -328,6 +347,8 @@ public class RisksController : ControllerBase
         risk.Status        = newStatus;
         risk.UpdatedAt     = DateTimeOffset.UtcNow;
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForRiskStatusChanged(
+            AuditActor.FromPrincipal(User), risk, previousStatus, newStatus));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(

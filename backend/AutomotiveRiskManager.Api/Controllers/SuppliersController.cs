@@ -21,6 +21,7 @@ using AutomotiveRiskManager.Api.Data;
 using AutomotiveRiskManager.Api.DTOs;
 using AutomotiveRiskManager.Api.Models;
 using AutomotiveRiskManager.Api.Security;
+using AutomotiveRiskManager.Api.Services;
 
 namespace AutomotiveRiskManager.Api.Controllers;
 
@@ -107,6 +108,7 @@ public class SuppliersController : ControllerBase
         };
 
         _db.Suppliers.Add(supplier);
+        _db.AuditLogs.Add(AuditLogBuilder.ForSupplierCreated(AuditActor.FromPrincipal(User), supplier));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation("Új beszállító rögzítve: {Name} (Id: {Id})", supplier.Name, supplier.Id);
@@ -145,11 +147,21 @@ public class SuppliersController : ControllerBase
             return BadRequest(new { Message = $"'{request.Name}' nevű beszállító már létezik." });
         }
 
+        var before = new Supplier
+        {
+            Id          = supplier.Id,
+            Name        = supplier.Name,
+            Activity    = supplier.Activity,
+            Description = supplier.Description,
+            Status      = supplier.Status
+        };
+
         supplier.Name        = request.Name.Trim();
         supplier.Activity    = request.Activity.Trim();
         supplier.Description = request.Description?.Trim();
         supplier.UpdatedAt   = DateTimeOffset.UtcNow;
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForSupplierUpdated(AuditActor.FromPrincipal(User), before, supplier));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation("Beszállító módosítva: {Name} (Id: {Id})", supplier.Name, supplier.Id);
@@ -186,6 +198,8 @@ public class SuppliersController : ControllerBase
         supplier.Status    = newStatus;
         supplier.UpdatedAt = DateTimeOffset.UtcNow;
 
+        _db.AuditLogs.Add(AuditLogBuilder.ForSupplierStatusChanged(
+            AuditActor.FromPrincipal(User), supplier, previousStatus, newStatus));
         await _db.SaveChangesAsync();
 
         _logger.LogInformation(

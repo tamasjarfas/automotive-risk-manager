@@ -170,6 +170,7 @@ Kizárólag oktatási célra készült. Nyilvános terjesztésre nem alkalmas.
 | Kockázatcsökkentő intézkedések megtekintése és szűrése | ✅ | ✅ | ✅ |
 | Kockázatcsökkentő intézkedések létrehozása, módosítása, státuszváltása | ✅ | ✅ | ❌ (403) |
 | Felhasználók és szerepkörök kezelése | ✅ | ❌ (403) | ❌ (403) |
+| Auditnapló megtekintése és szűrése (`GET /api/audit-logs`) | ✅ | ❌ (403) | ❌ (403) |
 
 A jogosultságokat a **szerver** ellenőrzi; a felületen elrejtett gombok csak kényelmi funkciók.
 
@@ -233,3 +234,19 @@ A `suppliers` tábla és adatai nem változnak.
 | Figyelmet igénylő tételek (Top 5) | Legmagasabb pontszámú nyitott kockázatok (max. 5), Lejárt határidejű intézkedések (max. 5), Közelgő határidők a következő 7 napon belül (max. 5) |
 | Egységtesztek | `backend/AutomotiveRiskManager.Tests/DashboardSummaryCalculatorTests.cs` (determinisztikus xUnit tesztek injektált UTC időponttal) |
 | Adatbázis-változás | Nem igényel új táblát vagy új EF Core migrációt (a meglévő `suppliers`, `risks`, `mitigation_actions` táblákat összegzi) |
+
+---
+
+## 📋 7. fejlesztési szakasz – Üzleti Auditnapló modul
+
+**Cél:** A fontos üzleti műveletek (`Supplier`, `Risk`, `MitigationAction`, `User`) utólagos, csak hozzáfűzhető (append-only) és biztonságos visszakövethetősége.
+
+| Elem | Megvalósítás |
+|---|---|
+| Adatbázis-tábla | `audit_logs` (`TimestampUtc`, `ActorUserId`, `ActorUserName`, `Action`, `EntityType`, `EntityId`, `Summary`, `Changes` JSONB; indexek időpontra, végrehajtóra, entitásra és műveletre) |
+| Tranzakciós integritás | Az üzleti entitások módosítása és az `AuditLog` bejegyzés mentése ugyanabban az adatbázis-tranzakcióban történik |
+| Biztonság és Allowlist | Központi `AuditLogBuilder` explicit mező-engedélylistával (`AllowedFieldsByEntity`) és tiltólistával (`ForbiddenFieldSubstrings`). Jelszó, jelszókivonat, biztonsági pecsét, süti vagy CSRF-token sosem naplózódik; a hosszú szöveges mezőknél (`Description`, `ResultNotes`) csak a változás ténye rögzül |
+| REST API végpont | `GET /api/audit-logs` – kizárólag olvasható (nincs `POST`/`PUT`/`PATCH`/`DELETE`), szűrhető (`fromUtc`, `toUtc`, `entityType`, `action`, `actor`, `entityId`) és lapozható (`page`, `pageSize` max. 100) |
+| Jogosultság | Kizárólag `Administrator` (`AppPolicies.ViewAuditLogs`); `RiskManager` és `Viewer` részére `403 Forbidden` |
+| Egységtesztek | `backend/AutomotiveRiskManager.Tests/AuditLogTests.cs` (létrehozás, sikertelen validáció, kockázatértékelés-változás, intézkedés-státuszváltás, érzékeny mezők visszautasítása, csak-olvasható vezérlő és szűrés/lapozás tesztjei) |
+| EF Core migráció | `dotnet ef migrations add AddAuditLogs` (GitHub Codespacesben generálandó) |
