@@ -125,6 +125,72 @@ namespace AutomotiveRiskManager.Api.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("AutomotiveRiskManager.Api.Models.MitigationAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ResponsiblePerson")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("ResultNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("RiskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DueDate")
+                        .HasDatabaseName("ix_mitigation_actions_due_date");
+
+                    b.HasIndex("ResponsiblePerson")
+                        .HasDatabaseName("ix_mitigation_actions_responsible");
+
+                    b.HasIndex("RiskId")
+                        .HasDatabaseName("ix_mitigation_actions_risk_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_mitigation_actions_status");
+
+                    b.ToTable("mitigation_actions", (string)null);
+                });
+
             modelBuilder.Entity("AutomotiveRiskManager.Api.Models.Risk", b =>
                 {
                     b.Property<Guid>("Id")
@@ -358,6 +424,17 @@ namespace AutomotiveRiskManager.Api.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("AutomotiveRiskManager.Api.Models.MitigationAction", b =>
+                {
+                    b.HasOne("AutomotiveRiskManager.Api.Models.Risk", "Risk")
+                        .WithMany("MitigationActions")
+                        .HasForeignKey("RiskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Risk");
+                });
+
             modelBuilder.Entity("AutomotiveRiskManager.Api.Models.Risk", b =>
                 {
                     b.HasOne("AutomotiveRiskManager.Api.Models.Supplier", "Supplier")
@@ -418,6 +495,11 @@ namespace AutomotiveRiskManager.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AutomotiveRiskManager.Api.Models.Risk", b =>
+                {
+                    b.Navigation("MitigationActions");
                 });
 #pragma warning restore 612, 618
         }
