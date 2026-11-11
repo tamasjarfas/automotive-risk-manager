@@ -336,5 +336,39 @@ public class RisksController : ControllerBase
 
         return Ok(RiskDto.FromEntity(risk));
     }
+
+    // ─── GET /api/risks/{id}/mitigations ──────────────────────────────────────
+    /// <summary>Egy adott kockázathoz kapcsolódó összes kockázatcsökkentő intézkedés lekérdezése.</summary>
+    [HttpGet("{id:guid}/mitigations")]
+    [ProducesResponseType(typeof(IEnumerable<MitigationActionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMitigationsForRisk(Guid id)
+    {
+        var risk = await _db.Risks
+            .AsNoTracking()
+            .Include(r => r.Supplier)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (risk is null)
+        {
+            return NotFound(new { Message = $"A(z) {id} azonosítójú kockázat nem található." });
+        }
+
+        var actions = await _db.MitigationActions
+            .AsNoTracking()
+            .Where(m => m.RiskId == id)
+            .OrderBy(m => m.Status == MitigationStatus.Completed || m.Status == MitigationStatus.Cancelled ? 1 : 0)
+            .ThenBy(m => m.DueDate == null ? 1 : 0)
+            .ThenBy(m => m.DueDate)
+            .ThenByDescending(m => m.Priority)
+            .ToListAsync();
+
+        var nowUtc = DateTimeOffset.UtcNow;
+        var dtos = actions
+            .Select(m => MitigationActionDto.FromEntity(m, risk, nowUtc))
+            .ToList();
+
+        return Ok(dtos);
+    }
 }
 

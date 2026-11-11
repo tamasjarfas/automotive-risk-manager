@@ -36,6 +36,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     /// <summary>A „risks" tábla – a beszállítói információbiztonsági kockázatok gyűjteménye.</summary>
     public DbSet<Risk> Risks { get; set; }
 
+    /// <summary>A „mitigation_actions" tábla – a kockázatcsökkentő intézkedések gyűjteménye.</summary>
+    public DbSet<MitigationAction> MitigationActions { get; set; }
+
     // ─── Modell konfiguráció ──────────────────────────────────────────────────
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -161,6 +164,64 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasIndex(r => r.SupplierId).HasDatabaseName("ix_risks_supplier_id");
             entity.HasIndex(r => r.Level).HasDatabaseName("ix_risks_level");
             entity.HasIndex(r => r.Status).HasDatabaseName("ix_risks_status");
+        });
+
+        // ─── Kockázatcsökkentő intézkedések (mitigation_actions tábla) ────────────
+        modelBuilder.Entity<MitigationAction>(entity =>
+        {
+            entity.ToTable("mitigation_actions");
+            entity.HasKey(m => m.Id);
+
+            entity.Property(m => m.Title)
+                  .HasMaxLength(200)
+                  .IsRequired();
+
+            entity.Property(m => m.Description)
+                  .HasMaxLength(2000);
+
+            entity.Property(m => m.ResponsiblePerson)
+                  .HasMaxLength(150)
+                  .IsRequired();
+
+            entity.Property(m => m.ResultNotes)
+                  .HasMaxLength(2000);
+
+            // A státusz (Planned, InProgress, Completed, Cancelled) és a prioritás
+            // (Low, Medium, High, Critical) olvasható stringként tárolódik.
+            entity.Property(m => m.Status)
+                  .HasConversion<string>()
+                  .HasMaxLength(30)
+                  .IsRequired();
+
+            entity.Property(m => m.Priority)
+                  .HasConversion<string>()
+                  .HasMaxLength(20)
+                  .IsRequired();
+
+            entity.Property(m => m.DueDate)
+                  .HasColumnType("timestamp with time zone");
+
+            entity.Property(m => m.CompletedAt)
+                  .HasColumnType("timestamp with time zone");
+
+            entity.Property(m => m.CreatedAt)
+                  .HasColumnType("timestamp with time zone");
+
+            entity.Property(m => m.UpdatedAt)
+                  .HasColumnType("timestamp with time zone");
+
+            // Kötelező idegen kulcs a risks táblára (1:N kapcsolat: egy kockázathoz több intézkedés).
+            // Restrict: a kockázat nem törölhető véletlenül, kaszkád módon az intézkedésekkel együtt.
+            entity.HasOne(m => m.Risk)
+                  .WithMany(r => r.MitigationActions)
+                  .HasForeignKey(m => m.RiskId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexek a kockázat, státusz, határidő és felelős szerinti gyors szűréshez
+            entity.HasIndex(m => m.RiskId).HasDatabaseName("ix_mitigation_actions_risk_id");
+            entity.HasIndex(m => m.Status).HasDatabaseName("ix_mitigation_actions_status");
+            entity.HasIndex(m => m.DueDate).HasDatabaseName("ix_mitigation_actions_due_date");
+            entity.HasIndex(m => m.ResponsiblePerson).HasDatabaseName("ix_mitigation_actions_responsible");
         });
     }
 }

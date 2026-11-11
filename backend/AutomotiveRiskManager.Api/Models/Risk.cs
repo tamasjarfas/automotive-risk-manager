@@ -63,5 +63,8 @@ public class Risk
 
     /// <summary>Az utolsó módosítás időpontja (UTC). Null, ha még nem módosították.</summary>
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>A kockázathoz tartozó kockázatcsökkentő intézkedések gyűjteménye (1:N kapcsolat).</summary>
+    public ICollection<MitigationAction> MitigationActions { get; set; } = new List<MitigationAction>();
 }
 

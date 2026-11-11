@@ -31,6 +31,12 @@ public static class AppPolicies
     /// <summary>Kockázatok létrehozása, módosítása, értékelése és státuszváltása: Administrator, RiskManager.</summary>
     public const string ManageRisks = "ManageRisks";
 
+    /// <summary>Kockázatcsökkentő intézkedések megtekintése: minden bejelentkezett szerepkör (Administrator, RiskManager, Viewer).</summary>
+    public const string ViewMitigations = "ViewMitigations";
+
+    /// <summary>Kockázatcsökkentő intézkedések létrehozása, módosítása, státuszváltása és befejezése: Administrator, RiskManager.</summary>
+    public const string ManageMitigations = "ManageMitigations";
+
     /// <summary>Felhasználók és szerepkörök kezelése: csak Administrator.</summary>
     public const string ManageUsers = "ManageUsers";
 }

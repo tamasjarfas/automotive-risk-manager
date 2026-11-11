@@ -20,6 +20,7 @@ interface AuthContextValue {
   hasRole: (...roles: Role[]) => boolean
   canManageSuppliers: boolean
   canManageRisks: boolean
+  canManageMitigations: boolean
   canManageUsers: boolean
 }
 
@@ -95,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasRole,
     canManageSuppliers: hasRole('Administrator', 'RiskManager'),
     canManageRisks: hasRole('Administrator', 'RiskManager'),
+    canManageMitigations: hasRole('Administrator', 'RiskManager'),
     canManageUsers: hasRole('Administrator')
   }), [user, loading, sessionExpired, login, logout, hasRole])
 

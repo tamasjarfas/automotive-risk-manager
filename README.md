@@ -167,6 +167,8 @@ Kizárólag oktatási célra készült. Nyilvános terjesztésre nem alkalmas.
 | Beszállítók létrehozása, módosítása, inaktiválása | ✅ | ✅ | ❌ (403) |
 | Kockázatok megtekintése és szűrése | ✅ | ✅ | ✅ |
 | Kockázatok létrehozása, szerkesztése, értékelése, státuszváltása | ✅ | ✅ | ❌ (403) |
+| Kockázatcsökkentő intézkedések megtekintése és szűrése | ✅ | ✅ | ✅ |
+| Kockázatcsökkentő intézkedések létrehozása, módosítása, státuszváltása | ✅ | ✅ | ❌ (403) |
 | Felhasználók és szerepkörök kezelése | ✅ | ❌ (403) | ❌ (403) |
 
 A jogosultságokat a **szerver** ellenőrzi; a felületen elrejtett gombok csak kényelmi funkciók.
@@ -199,3 +201,20 @@ A `suppliers` tábla és adatai nem változnak.
 | REST API végpontok | `GET /api/risks`, `GET /api/risks/{id}`, `POST /api/risks`, `PUT /api/risks/{id}`, `PATCH /api/risks/{id}/status` |
 | Egységtesztek | `backend/AutomotiveRiskManager.Tests/RiskCalculatorTests.cs` (xUnit határérték- és validációs tesztek) |
 | EF Core migráció | `dotnet ef migrations add AddRiskAssessments` (GitHub Codespacesben generálandó) |
+
+---
+
+## 🔧 5. fejlesztési szakasz – Kockázatcsökkentő intézkedések modul
+
+**Cél:** A beszállítói kockázatokhoz kapcsolódó kockázatcsökkentő intézkedések (`MitigationAction`) nyilvántartása, felelősök és határidők nyomon követése.
+
+| Elem | Megvalósítás |
+|---|---|
+| Adatbázis-tábla | `mitigation_actions` (idegen kulcs: `RiskId` → `risks.Id`, 1:N kapcsolat, `DeleteBehavior.Restrict`) |
+| Állapotok (`MitigationStatus`) | `Planned` (Tervezett), `InProgress` (Folyamatban), `Completed` (Befejezett – `CompletedAt` automatikus rögzítése), `Cancelled` (Visszavont) |
+| Prioritások (`MitigationPriority`) | `Low` (Alacsony), `Medium` (Közepes), `High` (Magas), `Critical` (Kritikus) |
+| Határidő-lejárat (`IsOverdue`) | Külön számított jelző (`MitigationPolicy.IsOverdue`) – nem írja felül a munkafolyamat státuszát |
+| Kockázat-függetlenség | Az intézkedés befejezése nem módosítja automatikusan a kapcsolódó `Risk` pontszámát vagy szintjét (a maradványkockázat újraértékelése külön `RiskManager` feladat) |
+| REST API végpontok | `GET /api/mitigations`, `GET /api/mitigations/{id}`, `GET /api/risks/{id}/mitigations`, `POST /api/mitigations`, `PUT /api/mitigations/{id}`, `PATCH /api/mitigations/{id}/status` |
+| Egységtesztek | `backend/AutomotiveRiskManager.Tests/MitigationPolicyTests.cs` (xUnit üzletiszabály-tesztek) |
+| EF Core migráció | `dotnet ef migrations add AddMitigationActions` (GitHub Codespacesben generálandó) |

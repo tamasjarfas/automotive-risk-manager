@@ -27,10 +27,15 @@ interface Notification {
   text: string
 }
 
+interface Props {
+  /** Egy adott kockázathoz tartozó intézkedések megnyitása az Intézkedések nézetben */
+  onOpenMitigations?: (riskId: string) => void
+}
+
 const ALL_LEVELS: RiskLevel[] = ['Critical', 'High', 'Medium', 'Low']
 const ALL_STATUSES: RiskStatus[] = ['Open', 'UnderReview', 'Mitigated', 'Closed']
 
-export default function RiskList() {
+export default function RiskList({ onOpenMitigations }: Props) {
   const { canManageRisks } = useAuth()
 
   const [risks, setRisks]               = useState<Risk[]>([])
@@ -300,7 +305,7 @@ export default function RiskList() {
                 <th>Pontszám / Szint</th>
                 <th>Státusz</th>
                 <th>Rögzítve</th>
-                {canManageRisks && <th className="col-actions">Műveletek</th>}
+                <th className="col-actions">Műveletek</th>
               </tr>
             </thead>
             <tbody>
@@ -334,32 +339,43 @@ export default function RiskList() {
                     <RiskStatusBadge status={risk.status} />
                   </td>
                   <td className="col-date">{formatDate(risk.createdAt)}</td>
-                  {canManageRisks && (
-                    <td className="col-actions">
-                      <div className="action-buttons">
+                  <td className="col-actions">
+                    <div className="action-buttons">
+                      {onOpenMitigations && (
                         <button
                           className="btn btn-sm btn-secondary"
-                          onClick={() => setEditTarget(risk)}
-                          title="Kockázat szerkesztése és újraértékelése"
+                          onClick={() => onOpenMitigations(risk.id)}
+                          title="A kockázathoz tartozó kockázatcsökkentő intézkedések megtekintése és kezelése"
                         >
-                          ✏️ Szerkesztés
+                          🔧 Intézkedések
                         </button>
-                        <select
-                          aria-label={`Státusz módosítása: ${risk.title}`}
-                          className="role-select"
-                          value={risk.status}
-                          disabled={updatingStatusId === risk.id}
-                          onChange={e => handleStatusChange(risk, e.target.value as RiskStatus)}
-                        >
-                          {ALL_STATUSES.map(st => (
-                            <option key={st} value={st}>
-                              {RISK_STATUS_LABELS[st]}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </td>
-                  )}
+                      )}
+                      {canManageRisks && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => setEditTarget(risk)}
+                            title="Kockázat szerkesztése és újraértékelése"
+                          >
+                            ✏️ Szerkesztés
+                          </button>
+                          <select
+                            aria-label={`Státusz módosítása: ${risk.title}`}
+                            className="role-select"
+                            value={risk.status}
+                            disabled={updatingStatusId === risk.id}
+                            onChange={e => handleStatusChange(risk, e.target.value as RiskStatus)}
+                          >
+                            {ALL_STATUSES.map(st => (
+                              <option key={st} value={st}>
+                                {RISK_STATUS_LABELS[st]}
+                              </option>
+                            ))}
+                          </select>
+                        </>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

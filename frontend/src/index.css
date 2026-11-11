@@ -917,6 +917,117 @@ body {
   color: var(--color-text-muted);
 }
 
+/* ─── Kockázatcsökkentő intézkedések modul (5. szakasz) ────────────────── */
+
+.mitigation-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.mitigation-status-planned {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.mitigation-status-inprogress {
+  background: #fefce8;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.mitigation-status-completed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.mitigation-status-cancelled {
+  background: #f1f5f9;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.mitigation-pill-planned {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* Lejárt határidejű intézkedések vizuális kiemelése */
+.supplier-table tbody tr.row-overdue {
+  background: #fff5f5;
+}
+.supplier-table tbody tr.row-overdue:hover {
+  background: #fee2e2;
+}
+
+.overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #fef2f2;
+  border: 1px solid #f87171;
+  color: #b91c1c;
+  white-space: nowrap;
+}
+
+.mitigation-due-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.due-none {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.completed-at-note {
+  font-size: 0.72rem;
+  color: #15803d;
+}
+
+.mitigation-risk-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mitigation-risk-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+}
+
+.mitigation-result-preview {
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #166534;
+}
+
+.mitigation-responsible {
+  font-weight: 500;
+  color: var(--color-secondary);
+}
+
 /* ─── Reszponzív finomítások ──────────────────────────────────────────── */
 @media (max-width: 720px) {
   .header-content { flex-direction: column; align-items: flex-start; }

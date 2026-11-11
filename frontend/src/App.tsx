@@ -13,6 +13,7 @@ import Navigation from './components/layout/Navigation'
 import type { Page } from './components/layout/Navigation'
 import SupplierList from './components/suppliers/SupplierList'
 import RiskList from './components/risks/RiskList'
+import MitigationList from './components/mitigations/MitigationList'
 import LoginPage from './components/auth/LoginPage'
 import AccessDenied from './components/auth/AccessDenied'
 import UserManagement from './components/users/UserManagement'
@@ -22,6 +23,7 @@ import { ROLE_LABELS } from './types/auth'
 export default function App() {
   const { user, loading: authLoading, logout, canManageUsers } = useAuth()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
+  const [selectedRiskIdForMitigations, setSelectedRiskIdForMitigations] = useState<string | null>(null)
 
   // Backend kapcsolat állapota (dashboard-on jelenik meg; a /api/health nyilvános)
   const [health, setHealth]   = useState<HealthResponse | null>(null)
@@ -92,7 +94,7 @@ export default function App() {
             <button className="btn btn-sm btn-logout" onClick={handleLogout}>
               Kijelentkezés
             </button>
-            <div className="header-badge">v0.4.0 – Fejlesztői verzió</div>
+            <div className="header-badge">v0.5.0 – Fejlesztői verzió</div>
           </div>
         </div>
       </header>
@@ -144,7 +146,7 @@ export default function App() {
                   { icon: '🏭', title: 'Beszállítókezelés',     desc: 'Beszállítók nyilvántartása',              status: 'Elkészült ✅' },
                   { icon: '⚠️', title: 'Kockázatkezelés',      desc: 'Kockázatok rögzítése és felülvizsgálata', status: 'Elkészült ✅' },
                   { icon: '📊', title: 'Kockázatértékelés',     desc: 'Valószínűség × Hatás pontszám',           status: 'Elkészült ✅' },
-                  { icon: '🔧', title: 'Kezelési intézkedések', desc: 'Feladatok és felelősök',                  status: 'Tervezett' },
+                  { icon: '🔧', title: 'Kezelési intézkedések', desc: 'Feladatok és felelősök',                  status: 'Elkészült ✅' },
                   { icon: '📈', title: 'Dashboard',             desc: 'Összesített mutatók, auditnapló',         status: 'Tervezett' },
                 ].map(feature => (
                   <div key={feature.title} className="feature-card">
@@ -165,7 +167,22 @@ export default function App() {
         {currentPage === 'suppliers' && <SupplierList />}
 
         {/* Kockázatok oldal (minden bejelentkezett szerepkör látja; a módosítás csak Administrator/RiskManager) */}
-        {currentPage === 'risks' && <RiskList />}
+        {currentPage === 'risks' && (
+          <RiskList
+            onOpenMitigations={(riskId) => {
+              setSelectedRiskIdForMitigations(riskId)
+              setCurrentPage('mitigations')
+            }}
+          />
+        )}
+
+        {/* Kockázatcsökkentő intézkedések oldal (minden bejelentkezett szerepkör látja; módosítás: Admin/RiskManager) */}
+        {currentPage === 'mitigations' && (
+          <MitigationList
+            initialRiskId={selectedRiskIdForMitigations}
+            onClearInitialRisk={() => setSelectedRiskIdForMitigations(null)}
+          />
+        )}
 
         {/* Felhasználók oldal: csak Administrator; másoknak hibaoldal (a szerver is 403-at ad) */}
         {currentPage === 'users' && (

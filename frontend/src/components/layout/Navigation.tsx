@@ -5,7 +5,7 @@
 
 import { useAuth } from '../../context/AuthContext'
 
-export type Page = 'dashboard' | 'suppliers' | 'risks' | 'users'
+export type Page = 'dashboard' | 'suppliers' | 'risks' | 'mitigations' | 'users'
 
 interface Props {
   currentPage: Page
@@ -20,10 +20,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard',    icon: '📊' },
-  { id: 'suppliers', label: 'Beszállítók',  icon: '🏭' },
-  { id: 'risks',     label: 'Kockázatok',   icon: '⚠️' },
-  { id: 'users',     label: 'Felhasználók', icon: '👤', adminOnly: true },
+  { id: 'dashboard',   label: 'Dashboard',    icon: '📊' },
+  { id: 'suppliers',   label: 'Beszállítók',  icon: '🏭' },
+  { id: 'risks',       label: 'Kockázatok',   icon: '⚠️' },
+  { id: 'mitigations', label: 'Intézkedések', icon: '🔧' },
+  { id: 'users',       label: 'Felhasználók', icon: '👤', adminOnly: true },
 ]
 
 export default function Navigation({ currentPage, onNavigate }: Props) {
