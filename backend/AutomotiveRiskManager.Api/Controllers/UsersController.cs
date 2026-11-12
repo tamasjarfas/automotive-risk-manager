@@ -124,7 +124,7 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "A szerepkör hozzárendelése sikertelen." });
         }
 
-        _db.AuditLogs.Add(AuditLogBuilder.ForUserCreated(AuditActor.FromPrincipal(User), user, role));
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserCreated(AuditActor.FromPrincipal(User), user.Id, user.UserName ?? "", role, user.IsActive));
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
@@ -184,8 +184,7 @@ public class UsersController : ControllerBase
         // A munkamenet jogosultságai azonnal frissüljenek
         await _userManager.UpdateSecurityStampAsync(user);
 
-        _db.AuditLogs.Add(AuditLogBuilder.ForUserRoleChanged(
-            AuditActor.FromPrincipal(User), user, previousRole, role));
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserRoleChanged(AuditActor.FromPrincipal(User), user.Id, user.UserName ?? "", previousRole, role));
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
@@ -233,8 +232,7 @@ public class UsersController : ControllerBase
         // Inaktiváláskor a meglévő munkamenet azonnal érvénytelenné válik
         await _userManager.UpdateSecurityStampAsync(user);
 
-        _db.AuditLogs.Add(AuditLogBuilder.ForUserStatusChanged(
-            AuditActor.FromPrincipal(User), user, previousIsActive, newIsActive));
+        _db.AuditLogs.Add(AuditLogBuilder.ForUserStatusChanged(AuditActor.FromPrincipal(User), user.Id, user.UserName ?? "", previousIsActive, newIsActive));
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 

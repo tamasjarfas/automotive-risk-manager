@@ -59,13 +59,13 @@ public class AuditLogsController : ControllerBase
         [FromQuery] string? action = null,
         [FromQuery] string? actor = null,
         [FromQuery] Guid? entityId = null,
-        [FromQuery] int page = AuditLogBuilder.DefaultPage,
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = AuditLogBuilder.DefaultPageSize)
     {
         AuditEntityType? parsedEntityType = null;
         if (!string.IsNullOrWhiteSpace(entityType))
         {
-            if (!AuditLogBuilder.TryParseEntityType(entityType, out var et))
+            if (!(Enum.TryParse<AuditEntityType>(entityType, true, out var et) && Enum.IsDefined(et)))
             {
                 return BadRequest(new
                 {
@@ -79,7 +79,7 @@ public class AuditLogsController : ControllerBase
         AuditAction? parsedAction = null;
         if (!string.IsNullOrWhiteSpace(action))
         {
-            if (!AuditLogBuilder.TryParseAction(action, out var act))
+            if (!(Enum.TryParse<AuditAction>(action, true, out var act) && Enum.IsDefined(act)))
             {
                 return BadRequest(new
                 {
@@ -104,8 +104,8 @@ public class AuditLogsController : ControllerBase
             _db.AuditLogs.AsNoTracking(),
             fromUtc,
             toUtc,
-            parsedEntityType,
-            parsedAction,
+            parsedEntityType?.ToString(),
+            parsedAction?.ToString(),
             actor,
             entityId);
 

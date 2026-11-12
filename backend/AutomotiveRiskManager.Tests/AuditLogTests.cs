@@ -167,7 +167,7 @@ public class AuditLogTests
         Assert.Contains(dto.ChangeItems, c => c.Field == "Score" && c.OldValue == "6" && c.NewValue == "20");
         Assert.Contains(dto.ChangeItems, c => c.Field == "Level" && c.OldValue == "Medium" && c.NewValue == "Critical");
         Assert.Contains(dto.ChangeItems, c => c.Field == "Status" && c.OldValue == "Open" && c.NewValue == "UnderReview");
-        Assert.Contains(dto.ChangeItems, c => c.Field == "Description" && c.OldValue == "(megadva)" && c.NewValue == "(módosítva)");
+        Assert.Contains(dto.ChangeItems, c => c.Field == "Description" && c.OldValue == "(korábbi szöveg)" && c.NewValue == "(módosítva)");
         Assert.DoesNotContain("Új részletes leírás", log.Changes ?? string.Empty);
     }
 
@@ -195,7 +195,7 @@ public class AuditLogTests
             previousStatus: MitigationStatus.InProgress,
             previousCompletedAt: null,
             previousResultNotes: null,
-            timestampUtc: FixedNow);
+            nowUtc: FixedNow);
 
         var completedDto = AuditLogDto.FromEntity(completedLog);
 
@@ -204,9 +204,9 @@ public class AuditLogTests
         Assert.Contains(completedDto.ChangeItems, c =>
             c.Field == "Status" && c.OldValue == "InProgress" && c.NewValue == "Completed");
         Assert.Contains(completedDto.ChangeItems, c =>
-            c.Field == "CompletedAt" && c.OldValue == null && c.NewValue == completedAt.ToString("O"));
+            c.Field == "CompletedAt" && c.OldValue == null && c.NewValue == completedAt.ToString("yyyy-MM-dd"));
         Assert.Contains(completedDto.ChangeItems, c =>
-            c.Field == "ResultNotes" && c.OldValue == "(üres)" && c.NewValue == "(megadva)");
+            c.Field == "ResultNotes" && c.OldValue == "(üres)" && c.NewValue == "(módosítva)");
         Assert.DoesNotContain("Sikeresen bevezetve minden beszállítói fiókon.", completedLog.Changes ?? string.Empty);
 
         // Visszanyitás (Completed -> InProgress)
@@ -219,7 +219,7 @@ public class AuditLogTests
             previousStatus: MitigationStatus.Completed,
             previousCompletedAt: completedAt,
             previousResultNotes: action.ResultNotes,
-            timestampUtc: FixedNow);
+            nowUtc: FixedNow);
 
         Assert.Equal(AuditAction.Reopened, reopenedLog.Action);
     }
@@ -240,9 +240,9 @@ public class AuditLogTests
             IsActive     = true
         };
 
-        var createLog = AuditLogBuilder.ForUserCreated(TestActor, user, AppRoles.RiskManager, FixedNow);
-        var roleLog = AuditLogBuilder.ForUserRoleChanged(TestActor, user, AppRoles.Viewer, AppRoles.RiskManager, FixedNow);
-        var deactivateLog = AuditLogBuilder.ForUserStatusChanged(TestActor, user, true, false, FixedNow);
+        var createLog = AuditLogBuilder.ForUserCreated(TestActor, user.Id, user.UserName ?? "", AppRoles.RiskManager, user.IsActive, FixedNow);
+        var roleLog = AuditLogBuilder.ForUserRoleChanged(TestActor, user.Id, user.UserName ?? "", AppRoles.Viewer, AppRoles.RiskManager, FixedNow);
+        var deactivateLog = AuditLogBuilder.ForUserStatusChanged(TestActor, user.Id, user.UserName ?? "", true, false, FixedNow);
 
         Assert.Equal(AuditAction.Created, createLog.Action);
         Assert.Equal(AuditAction.RoleChanged, roleLog.Action);
@@ -374,8 +374,8 @@ public class AuditLogTests
             logs,
             fromUtc: FixedNow.AddHours(-2).AddMinutes(-5),
             toUtc: FixedNow,
-            entityType: AuditEntityType.Risk,
-            action: AuditAction.Updated,
+            entityType: AuditEntityType.Risk.ToString(),
+            action: AuditAction.Updated.ToString(),
             actor: "risk",
             entityId: targetEntityId).ToList();
 
